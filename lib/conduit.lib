@@ -1,5 +1,5 @@
 
-
+<?php
 if (!isset($CONDUIT_LIB))
 {
 	$CONDUIT_LIB = 1;
@@ -225,4 +225,4 @@ if (!isset($CONDUIT_LIB))
 	// echo "</table>";
 
 
-
+?>
