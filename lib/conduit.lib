@@ -1,0 +1,230 @@
+<?php
+
+if (!isset($CONDUIT_LIB))
+{
+	$CONDUIT_LIB = 1;
+	ini_set('display_errors',1);
+	ini_set('display_startup_errors',1);
+	error_reporting(-1);
+
+	class Conduit {
+		private $myCon = null;
+		function __construct($host=null, $user=null, $pass=null, $db=null, $port=null, $socket=null) {
+			if ($host == "iniconfig" && !$user && !$pass && !$port && !$socket && !$db) {
+				include("config.lib");
+			} else {
+				if (!$host)
+					$host = ini_get("mysqli.default_host");
+				if (!$user)
+					$user = ini_get("mysqli.default_user");
+				if (!$db)
+					$db = "";
+				if (!$pass)
+					$pass = ini_get("mysqli.default_pw");
+				if (!$port)
+					$port = ini_get("mysqli.default_port");
+				if (!$socket)
+					$socket = ini_get("mysqli.default_socket");	
+			}
+			
+			$con = mysqli_connect($host, $user, $pass, $db, $port, $socket);
+			if (!$con) {
+	 		  die('Could not connect: ' . mysqli_error($con));
+			}
+			$this->myCon = $con;
+		}
+
+		function __destruct() {
+			if (isset($this->myCon) && $this->myCon)
+				mysqli_close($this->myCon);
+		}
+
+		function insert($list)
+		{
+			return new InsertionConduit($this->myCon, $list);
+		}
+		function delete()
+		{
+			return new DeletionConduit($this->myCon);
+		}
+		function select($list)
+		{
+			return new SelectionConduit($this->myCon, $list);
+		}
+
+		function destroy() {
+			if ($this->myCon) {
+				mysqli_close($this->myCon);
+				unset($this->myCon);
+			}
+
+		}
+	}
+
+
+	/** Selection Module. 
+	*	$conduit = new Conduit();
+	* $select = $conduit->select(array('*'))
+	* ->from('payment');
+	*/
+	class SelectionConduit {
+		private $myCon = null;
+		private $cols = "";
+		private $tbl = "";
+		private $cond = "";
+		private $limit = "";
+		private $orders = "";
+
+		function __construct($con, $sel) {
+			$this->myCon = $con;
+			$len = count($sel) - 1;
+			
+			for ($x = 0; $x < $len; $x++)
+				$this->cols .= $sel[$x] . ", ";
+
+			$this->cols .= $sel[$x];
+		}
+
+		function from($tablename) {
+			$this->tbl = $tablename;
+			return $this;
+		}
+
+		function limit($limitnum) {
+			$this->limit = " LIMIT ".$limitnum;
+			return $this;
+			
+		}
+		function where($condstr) {
+			$this->cond = " WHERE ".$condstr;
+			return $this;
+		}
+		function order($conditionstr)
+		{
+			$this->orders = " ORDER BY ".$conditionstr;
+			return $this;
+		}
+		function fetcharray() {
+			$sql = "SELECT ".$this->cols." FROM ".$this->tbl.$this->cond.$this->limit.$this->orders;
+			$result = mysqli_query($this->myCon,$sql);
+			$res = array();
+
+			while ($row = mysqli_fetch_array($result))
+				array_push($res, $row);
+
+			$result->close();
+			return $res;
+		}
+	}
+// $sql="SELECT * FROM payment WHERE date = '".$date."' AND company = '".$company."' LIMIT 1";
+	class InsertionConduit {
+		private $myCon = null;
+		private $cols = "";
+		private $tbl = "";
+		private $cond = "";
+		private $vals = "";
+		function __construct($con, $sel) {
+			$this->myCon = $con;
+			$len = count($sel) - 1;
+			
+			for ($x = 0; $x < $len; $x++)
+				$this->cols .= $sel[$x] . ", ";
+
+			$this->cols .= $sel[$x];
+		}
+
+		function into($tablename) {
+			$this->tbl = $tablename;
+			return $this;
+		}
+
+		function values($str)
+		{
+
+			$len = count($str) - 1;
+			
+			for ($x = 0; $x < $len; $x++)
+				$this->vals .= $str[$x] . ", ";
+
+			$this->vals .= $str[$x];
+
+			return $this;
+		}
+
+		function commit() {
+			$sql = "INSERT INTO ".$this->tbl."(".$this->cols.") VALUES (".$this->vals.")";
+			mysqli_query($this->myCon,$sql);
+			$this->myCon->commit();
+			return $this;
+		}
+	}
+
+	class UpdateConduit {
+		private $myCon = null;
+		function __construct($con) {
+			$this->myCon = $con;
+		}
+	}
+
+	class DeletionConduit {
+		private $myCon = null;
+		private $tbl = "";
+		private $cnd = "";
+		function __construct($con) {
+			$this->myCon = $con;
+		}
+
+		function from($table) {
+			$this->tbl = $table;
+			return $this;
+		}
+
+		function where($cond) {
+			$this->cnd = " WHERE ".$cond;
+			return $this;
+		}
+
+		function commit() {
+			$sql = "DELETE FROM ".$this->tbl.$this->cnd;
+			mysqli_query($this->myCon,$sql);
+			$this->myCon->commit();
+			return $this;
+		}
+
+	}
+
+	function swrap($temp) {
+		return "'".$temp."'";
+	}
+//     $sql="DELETE FROM payment WHERE date = '".$date."' AND company = '".$company."'";
+}
+
+	// // $conduit = new Conduit('localhost', 'root', 'anythingfornow','rhocode', 6670);
+	// $conduit = new Conduit('iniconfig');
+	// $select = $conduit->select(array('*'))
+	// ->from('payment');
+	// $rows = $select->fetcharray();
+
+	// echo "<table>
+	// <tr>
+	// <th>Date</th>
+	// <th>Hours</th>
+	// <th>Company</th>
+	// <th>Completed</th>
+	// </tr>";
+	// foreach ($rows as $row) {
+	// 	echo "<tr>";
+	//     echo "<td>" . $row['date'] . "</td>";
+	//     echo "<td>" . $row['hours'] . "</td>";
+	//     echo "<td>" . $row['company'] . "</td>";
+	//     if ($row['completed'])
+	//       echo "<td>" . "No" . "</td>";
+	//     else
+	//       echo "<td>" . "Yes" . "</td>";
+	// }
+	// echo "</table>";
+
+
+
+
+?>
