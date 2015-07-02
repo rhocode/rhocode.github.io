@@ -1,4 +1,4 @@
-<?php
+
 
 if (!isset($CONDUIT_LIB))
 {
@@ -226,5 +226,3 @@ if (!isset($CONDUIT_LIB))
 
 
 
-
-?>
