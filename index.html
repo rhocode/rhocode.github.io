@@ -1,8 +1,71 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>rhoCode CDN</title>
-    </head>
-    <body>
-        <a href="http://rhocode.com"><img src="http://i.imgur.com/G5bFqTy.png" height="100%" alt="rhoCode"></a>
-    </body>
+
+<head>
+    <title>rhoCode</title>
+    <style>
+        body {
+            background-color: #3399ff;
+            font-family: sans-serif;
+            height: 100%;
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            height: 100vh;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .links {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: row;
+            font-size: 3vh;
+        }
+
+        .logo {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            height: 50vh;
+        }
+
+        a {
+            color: white;
+            padding: 10px;
+        }
+
+        img {
+            height: 50vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="spacer"></div>
+        <div class="logo">
+            <img src="img/rhocode.png" alt="rhoCode logo" />
+        </div>
+        <div class="links">
+            <a href="https://github.com/rhocode" target="_blank">github</a>
+            <a href="https://twitter.com/rhocode" target="_blank">twitter</a>
+        </div>
+        <div class="spacer"></div>
+    </div>
+</body>
+
 </html>
